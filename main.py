@@ -1,20 +1,27 @@
 '''
+https://github.com/lostinth1cho/pygameIGANG
 todo-list:
-分開出球
+顯示版本代號
+調整開始畫面
+計時器會在畫面最上方移動
 '''
 import pygame
 import random
 import os
 import time
 
+patch = "patch:230513"
 FPS = 50
 WIDTH = 800
 HEIGHT = 600
+timer_height = 10
+timer_width = 10
 SPEED_Y = 5
 debug = True
 gravity = 0.98
 XspeedL_low = 4
 XspeedL_high = 6
+speed_of_timer = WIDTH / (FPS*10)
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -106,6 +113,16 @@ class Rock(pygame.sprite.Sprite):
             self.speedy *= -0.98
         if self.rect.left > WIDTH+100 or self.rect.right < -100:
             self.reset('left' if self.speedx > 0 else 'right')
+'''
+class clock(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((timer_height, timer_width))
+        self.image.fill(WHITE)
+        self.rect = self.image.get_rect()
+
+    def update(self):
+        self.rect.x = (self.rect.x + speed_of_timer) % WIDTH'''
 
 def generate_ball(n):
     klr = random.randint(1, n)
@@ -129,10 +146,11 @@ def draw_text(surf, text, size, x, y):
 
 def draw_init(out):
     screen.blit(BackGround_img, (0, 0))
-    draw_text(screen, 'igang igang dog dou bu dang', 64, WIDTH/2, HEIGHT/4)
-    draw_text(screen, '← →to move Kryst4l', 22, WIDTH/2, HEIGHT/2)
-    draw_text(screen, 'press ↑ to start', 18, WIDTH/2, HEIGHT*3/4)
-    draw_text(screen, out, 25, 100, 100)
+    draw_text(screen, 'igang igang dog dou bu dang', 64, WIDTH/2, HEIGHT/4-60)
+    draw_text(screen, 'your : '+out, 40, WIDTH/2, 350)
+    draw_text(screen, 'press ← → to move Kryst4l', 18, WIDTH/2, 545)
+    draw_text(screen, 'press ↑ to start', 18, WIDTH/2, 565)
+    draw_text(screen, patch, 15, 45, 575)
     pygame.display.update()
     waiting = True
     while waiting:
@@ -154,12 +172,9 @@ player = Player()
 all_sprites.add(player)
 generate_ball(1)
 
-
-
 show_init = True
-
 start_ticks = pygame.time.get_ticks()
-
+timer_x = 0
 running = True
 result = ""
 out = "0.0"
@@ -174,10 +189,11 @@ while running:
         rocks = pygame.sprite.Group()
         player = Player()
         all_sprites.add(player)
+        timer_x = 0
         generate_ball(1)
     now_ticks=pygame.time.get_ticks()
-    ticks = now_ticks - start_ticks
     
+    ticks = now_ticks - start_ticks
     #ticks=pygame.time.get_ticks()
     
     millis=ticks%1000
@@ -187,7 +203,8 @@ while running:
         generate_ball(1)
     out='{seconds}.{millis}'.format( millis=millis//10, seconds=seconds)
     result = out
-    draw_text(screen, out, 25, 100, 100)
+    timer_x = (timer_x + speed_of_timer) % WIDTH
+    draw_text(screen, out, 25, timer_x, 60)
     pygame.display.flip()
     clock.tick(FPS)
 
